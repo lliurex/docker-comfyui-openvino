@@ -12,7 +12,7 @@ services:
       - "8188:8188"
       - "8080:8080"
     volumes:
-      - "./storage:/root"
+      - "comfyui-openvino:/root"
       - "/usr/lib/ai/diffusion_models/models:/models:ro"
     environment:
       - CLI_ARGS=--cpu --use-pytorch-cross-attention
@@ -29,6 +29,8 @@ services:
     security_opt:
       - label:disable
       - apparmor:unconfined
+    networks:
+      - comfyui-openvino-network
     deploy:
       resources:
         limits:
@@ -36,4 +38,8 @@ services:
         reservations:
           memory: 1G       # min 1GB
     restart: always
-
+volumes:
+  comfyui-openvino:
+networks:
+  comfyui-openvino-network:
+    driver: bridge
