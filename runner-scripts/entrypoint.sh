@@ -21,11 +21,10 @@ export PIP_ROOT_USER_ACTION=ignore
 mkdir -p ai_diffusion && cd /root/ai_diffusion
 if [ ! -f "/root/ai_diffusion/.download_info" ]; then
     bash /runner-scripts/get_latest_plugin.sh
-else
-    read -r VERSION DOWNLOAD_URL <<< $(cat .download_info)
-    FILENAME=$(basename "$DOWNLOAD_URL")
-    python -m http.server -d ./package 8080 &
 fi
+read -r VERSION DOWNLOAD_URL <<< $(cat .download_info)
+FILENAME=$(basename "$DOWNLOAD_URL")
+python -m http.server -d ./package 8080 &
 
 TARGET_DIR="/opt/ComfyUI/models"
 CONTAINER_SOURCE="/opt/ComfyUI/.models/"
