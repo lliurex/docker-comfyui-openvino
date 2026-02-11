@@ -1,0 +1,39 @@
+# Compose file for Intel GPU
+
+services:
+  comfyui:
+    init: true
+    container_name: comfyui-openvino
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: "comfyui-openvino"
+    ports:
+      - "8188:8188"
+      - "8080:8080"
+    volumes:
+      - "./storage:/root"
+      - "/usr/lib/ai/diffusion_models/models:/models:ro"
+    environment:
+      - CLI_ARGS=--cpu --use-pytorch-cross-attention
+      - AI_DIFFUSION_DOWNLOAD_URL=http://thinkpad.lan:8000
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/fuse:/dev/fuse
+      - /dev/accel/accel0:/dev/accel/accel0
+    cpu_shares: 2 # Minimun priority
+    cap_add:
+      - SYS_NICE # Nice allowed inside container
+      - SYS_ADMIN # Ionice inside container
+    ipc: host
+    security_opt:
+      - label:disable
+      - apparmor:unconfined
+    deploy:
+      resources:
+        limits:
+          memory: 8G       # max 8GB
+        reservations:
+          memory: 1G       # min 1GB
+    restart: always
+
