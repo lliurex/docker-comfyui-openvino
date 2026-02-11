@@ -1,0 +1,105 @@
+#!/bin/bash
+set -e
+
+API_URL="https://api.github.com/repos/Acly/krita-ai-diffusion/releases/latest"
+WEB_PATH_PREFIX=""
+
+help() {
+    echo "Use: $0 [OPTIONS]"
+    echo "  -m, --minimal      Minimal"
+    echo "  -r, --recommended  Recomended"
+    echo "  -a, --all          All"
+    exit 0
+}
+
+VALID_ARG=false
+for arg in "$@"; do
+    case $arg in
+        -m|--minimal|-r|--recommended|-a|--all) VALID_ARG=true; break ;;
+        -h|--help) help ;;
+    esac
+done
+
+if [ "$VALID_ARG" = false ]; then
+    echo "Error: Missing arguments (-m, -r, -a)."
+    exit 1
+fi
+
+error_exit() { echo "ERROR: $1" >&2; exit 1; }
+
+for cmd in jq curl unzip python3 awk; do
+    command -v $cmd >/dev/null 2>&1 || error_exit "Missing '$cmd'."
+done
+
+echo "--- Checking GitHub  ---"
+JSON_RESPONSE=$(curl -sLf "$API_URL")
+ZIP_URL=$(echo "$JSON_RESPONSE" | jq -r '.assets[0].browser_download_url')
+
+[ -z "$ZIP_URL" ] && error_exit "Missing zip file url."
+
+TEMP_DIR=$(mktemp -d)
+echo "--- Using: $TEMP_DIR ---"
+
+echo "Downloading..."
+curl -L -# -o "$TEMP_DIR/release.zip" "$ZIP_URL"
+unzip -q "$TEMP_DIR/release.zip" -d "$TEMP_DIR"
+
+DOWNLOADER_SCRIPT=$(find "$TEMP_DIR" -name "download_models.py" | head -n 1)
+MODELS_JSON=$(find "$TEMP_DIR" -name "models.json" | head -n 1)
+
+[ -z "$MODELS_JSON" ] && error_exit "models.json not found."
+
+LIST_FILE="$TEMP_DIR/lista_archivos.txt"
+
+(
+    cd "$(dirname "$DOWNLOADER_SCRIPT")"
+    python3 "$(basename "$DOWNLOADER_SCRIPT")" "$@" -l . > "$LIST_FILE"
+)
+
+sed -i '/Generative AI for Krita/d' "$LIST_FILE"
+sed -i '/^$/d' "$LIST_FILE"
+
+echo "--- Processing downloads ---"
+
+while read -r LINE; do
+    FILENAME=$(echo "$LINE" | awk '{print $NF}')
+    COMPONENT_NAME=$(echo "$LINE" | sed "s/$FILENAME$//" | xargs)
+
+    ORIG_URL=$(jq -r --arg fn "$FILENAME" '
+        ..
+        | objects
+        | select(.files?)
+        | .files[]
+        | select(.path | endswith($fn))
+        | .url
+    ' "$MODELS_JSON" | head -n 1)
+
+    if [ -z "$ORIG_URL" ] || [ "$ORIG_URL" == "null" ]; then
+        echo "URL not found for '$FILENAME' into json file."
+        continue
+    fi
+
+    REL_PATH=$(echo "$ORIG_URL" | sed -E 's#^[^:]+://[^/]+##')
+    LOCAL_FILE_PATH=".${REL_PATH}"
+    LOCAL_DIR=$(dirname "$LOCAL_FILE_PATH")
+
+    mkdir -p "$LOCAL_DIR"
+    if [ -f "$LOCAL_FILE_PATH" ]; then
+        echo "Already downloaded!"
+    else
+        echo "Downloading from: $ORIG_URL"
+        curl -L -# -o "$LOCAL_FILE_PATH" "$ORIG_URL"
+    fi
+
+    NEW_WEB_URL="${WEB_PATH_PREFIX}${REL_PATH}"
+
+    TMP_JSON=$(mktemp)
+    jq --arg fn "$FILENAME" --arg newurl "$NEW_WEB_URL" '
+        (.. | objects | select(.files?) | .files[] | select(.path | endswith($fn))).url = $newurl
+    ' "$MODELS_JSON" > "$TMP_JSON" && mv "$TMP_JSON" "$MODELS_JSON"
+
+done < "$LIST_FILE"
+
+echo "End."
+
+rm -rf "$TEMP_DIR"
