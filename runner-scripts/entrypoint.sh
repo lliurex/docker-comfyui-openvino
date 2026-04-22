@@ -1,7 +1,10 @@
 #!/bin/bash -x
 
 set -e
-
+PLUGIN_FORCE_TAG=v1.49.1
+if [ -n "$PLUGIN_FORCE_TAG" ]; then
+    echo Providing plugin version $PLUGIN_FORCE_TAG
+fi
 #echo '***'
 #echo 'DOWNLOAD MODELS: cd ai_diffusion && python3 download_models.py -m ../ComfyUI'
 #echo '***'
@@ -20,7 +23,7 @@ export PIP_ROOT_USER_ACTION=ignore
 
 mkdir -p ai_diffusion && cd /root/ai_diffusion
 if [ ! -f "/root/ai_diffusion/.download_info" ]; then
-    bash /runner-scripts/get_latest_plugin.sh
+    bash /runner-scripts/get_latest_plugin.sh $PLUGIN_FORCE_TAG
 fi
 read -r VERSION DOWNLOAD_URL <<< $(cat .download_info)
 FILENAME=$(basename "$DOWNLOAD_URL")
@@ -38,7 +41,8 @@ if [ -w "/models" ] ; then
     # Escritura en el HOST de los modelos
     cd /root/ai_diffusion/decompressed/ai_diffusion
     # Se descargará del host segun entorno AI_DIFFUSION_DOWNLOAD_URL
-    python download_models.py -m /models
+    # download_models.py utiliza <path>/models por defecto
+    python download_models.py -m / --flux2 --checkpoints
 fi
 # contenido original para que sea ro
 if [ ! -d "$CONTAINER_SOURCE" ]; then
