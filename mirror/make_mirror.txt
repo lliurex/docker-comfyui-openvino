@@ -3,6 +3,7 @@ set -e
 
 API_URL="https://api.github.com/repos/Acly/krita-ai-diffusion/releases/latest"
 WEB_PATH_PREFIX=""
+extra_models="--flux2"
 
 help() {
     echo "Use: $0 [OPTIONS]"
@@ -53,7 +54,7 @@ LIST_FILE="$TEMP_DIR/lista_archivos.txt"
 
 (
     cd "$(dirname "$DOWNLOADER_SCRIPT")"
-    python3 "$(basename "$DOWNLOADER_SCRIPT")" "$@" -l . > "$LIST_FILE"
+    python3 "$(basename "$DOWNLOADER_SCRIPT")" "$@" "$extra_models" --checkpoints  -l . > "$LIST_FILE"
 )
 
 sed -i '/Generative AI for Krita/d' "$LIST_FILE"
