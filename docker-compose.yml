@@ -12,11 +12,11 @@ services:
       - "8188:8188"
       - "8080:8080"
     volumes:
-      - "comfyui-openvino:/root"
-      - "/usr/lib/ai/diffusion_models/models:/models:ro"
+#      - "comfyui-openvino:/root"
+      - "/usr/lib/ai/diffusion_models/models:/models:rw"
     environment:
       - CLI_ARGS=--cpu --use-pytorch-cross-attention
-      - AI_DIFFUSION_DOWNLOAD_URL=http://thinkpad.lan:8000
+#      - AI_DIFFUSION_DOWNLOAD_URL=http://thinkpad.lan:8000
     devices:
       - /dev/dri:/dev/dri
       - /dev/fuse:/dev/fuse
