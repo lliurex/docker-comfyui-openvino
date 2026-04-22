@@ -513,7 +513,8 @@ RUN cd /opt/ComfyUI/custom_nodes && git clone https://github.com/Fannovel16/comf
 RUN cd /opt/ComfyUI/custom_nodes && git clone https://github.com/cubiq/ComfyUI_IPAdapter_plus ComfyUI_IPAdapter_plus
 RUN cd /opt/ComfyUI/custom_nodes && git clone https://github.com/Acly/comfyui-tooling-nodes comfyui-tooling-nodes
 RUN cd /opt/ComfyUI/custom_nodes && git clone https://github.com/Acly/comfyui-inpaint-nodes comfyui-inpaint-nodes
-
+RUN cd /opt/ComfyUI/custom_nodes && git clone https://github.com/city96/ComfyUI-GGUF ComfyUI-GGUF && pip install --upgrade gguf
+RUN bash -c 'date >> /var/log/builddate'
 
 #################################################################################
 #
