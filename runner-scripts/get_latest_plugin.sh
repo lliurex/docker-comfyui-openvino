@@ -3,8 +3,8 @@
 FORCE_VERSION_TAG=$1
 API_URL="https://api.github.com/repos/Acly/krita-ai-diffusion"
 
-if [ -n "$FORCE_VERSION" ]; then
-    echo Getting plugin for tag $FORCE_VERSION
+if [ -n "$FORCE_VERSION_TAG" ]; then
+    echo Getting plugin for tag $FORCE_VERSION_TAG
     API_URL="$API_URL/releases/tags/$FORCE_VERSION_TAG"
 else
     echo Getting latest version plugin
