@@ -427,7 +427,7 @@ RUN python -m venv venv && \
     torch==${PYTORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu torchaudio==${TORCHAUDIO_VERSION}+cpu --index-url https://download.pytorch.org/whl/cpu && \
     python -m pip install --no-cache-dir \
     intel_extension_for_pytorch==${IPEX_VERSION} oneccl_bind_pt==${TORCHCCL_VERSION} --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/ && \
-    python -m pip install intel-openmp && \
+    python -m pip install --no-cache-dir  intel-openmp && \
     python -m pip cache purge
 
 
@@ -505,15 +505,16 @@ RUN --mount=type=cache,target=/var/cache/apt \
     && rm -rf /var/lib/apt/lists/*
 
 
-RUN git clone https://github.com/comfy-org/ComfyUI /opt/ComfyUI
-RUN pip install -r /opt/ComfyUI/requirements.txt
-RUN pip install -r /opt/ComfyUI/manager_requirements.txt
-RUN cd /opt/ComfyUI/custom_nodes && git clone https://github.com/ltdrdata/ComfyUI-Manager comfyui-manager
-RUN cd /opt/ComfyUI/custom_nodes && git clone https://github.com/Fannovel16/comfyui_controlnet_aux comfyui_controlnet_aux && cd comfyui_controlnet_aux && pip install -r requirements.txt
-RUN cd /opt/ComfyUI/custom_nodes && git clone https://github.com/cubiq/ComfyUI_IPAdapter_plus ComfyUI_IPAdapter_plus
-RUN cd /opt/ComfyUI/custom_nodes && git clone https://github.com/Acly/comfyui-tooling-nodes comfyui-tooling-nodes
-RUN cd /opt/ComfyUI/custom_nodes && git clone https://github.com/Acly/comfyui-inpaint-nodes comfyui-inpaint-nodes
-RUN cd /opt/ComfyUI/custom_nodes && git clone https://github.com/city96/ComfyUI-GGUF ComfyUI-GGUF && pip install --upgrade gguf
+RUN git clone https://github.com/comfy-org/ComfyUI /opt/ComfyUI && rm -rf /opt/ComfyUI/.git
+RUN pip install --no-cache-dir -r /opt/ComfyUI/requirements.txt
+RUN pip install --no-cache-dir -r /opt/ComfyUI/manager_requirements.txt
+RUN cd /opt/ComfyUI/custom_nodes && git clone https://github.com/ltdrdata/ComfyUI-Manager comfyui-manager && rm -rf comfyui-manager/.git
+RUN cd /opt/ComfyUI/custom_nodes && git clone https://github.com/Fannovel16/comfyui_controlnet_aux comfyui_controlnet_aux && cd comfyui_controlnet_aux && rm -rf .git && pip install --no-cache-dir -r requirements.txt
+RUN cd /opt/ComfyUI/custom_nodes && git clone https://github.com/cubiq/ComfyUI_IPAdapter_plus ComfyUI_IPAdapter_plus && rm -rf ComfyUI_IPAdapter_plus/.git
+RUN cd /opt/ComfyUI/custom_nodes && git clone https://github.com/Acly/comfyui-tooling-nodes comfyui-tooling-nodes && rm -rf comfyui-tooling-nodes/.git
+RUN cd /opt/ComfyUI/custom_nodes && git clone https://github.com/Acly/comfyui-inpaint-nodes comfyui-inpaint-nodes && rm -rf comfyui-inpaint-nodes/.git
+RUN cd /opt/ComfyUI/custom_nodes && git clone https://github.com/city96/ComfyUI-GGUF ComfyUI-GGUF && rm -rf ComfyUI-GGUF/.git && pip install --no-cache-dir --upgrade gguf
+RUN pip cache purge
 RUN bash -c 'date >> /var/log/builddate'
 
 #################################################################################
