@@ -1,0 +1,10 @@
+IMAGENAME="comfyui-openvino:latest"
+DESTINATION="comfyui-docker.tar.gz"
+PV=$(type -fp pv)
+
+if [ -n "$PV" ]; then
+    SIZE=$(docker inspect $IMAGENAME --format='{{.Size}}')
+    docker save $IMAGENAME | pv -s $SIZE | gzip > $DESTINATION
+else
+    docker save $IMAGENAME | gzip > $DESTINATION
+fi

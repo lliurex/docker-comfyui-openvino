@@ -1,0 +1,9 @@
+IMAGENAME="comfyui-openvino:latest"
+DESTINATION="comfyui-docker.tar.gz"
+PV=$(type -fp pv)
+
+if [ -n "$PV" ]; then
+    pv $IMAGENAME | gunzip | docker load
+else
+    gunzip -c $IMAGENAME | docker load
+fi
